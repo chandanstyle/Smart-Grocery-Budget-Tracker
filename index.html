@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Grocery Budget Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Hind:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div id="userbar" class="userbar" hidden>
+      <span id="user-email"></span>
+      <button type="button" id="logout" class="btn ghost small">Logout</button>
+    </div>
+    <h1>Grocery Budget Tracker</h1>
+    <p>Set your monthly budget, list what you need, and see right away if you are going over.</p>
+  </header>
+
+  <!-- LOGIN -->
+  <section id="auth" class="layout single" hidden>
+    <div class="panel auth-panel">
+      <h2 id="auth-title">Login</h2>
+      <p id="setup-warning" class="tip" hidden>
+        Firebase is not set up yet. Paste your keys into <b>firebase-config.js</b>.
+      </p>
+      <form id="auth-form" class="item-form" autocomplete="on">
+        <div>
+          <label class="field" for="email">Email</label>
+          <input id="email" type="email" autocomplete="email" required>
+        </div>
+        <div>
+          <label class="field" for="password">Password (min 6 characters)</label>
+          <input id="password" type="password" autocomplete="current-password" minlength="6" required>
+        </div>
+        <p id="auth-error" class="auth-error" role="alert" hidden></p>
+        <button type="submit" id="auth-submit" class="btn primary">Login</button>
+        <button type="button" id="google" class="btn outline">Sign in with Google</button>
+        <p class="muted">
+          <a href="#" id="toggle-mode">Create a new account</a> ·
+          <a href="#" id="forgot">Forgot password?</a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <div id="app" hidden>
+  <main class="layout">
+    <!-- LEFT: budget + meter -->
+    <section class="panel" aria-labelledby="budget-title">
+      <h2 id="budget-title">Your budget</h2>
+
+      <label class="field" for="month">Month</label>
+      <input id="month" type="month" required>
+
+      <label class="field gap" for="budget">Monthly budget (₹)</label>
+      <input id="budget" type="number" min="0" step="100" inputmode="numeric" placeholder="e.g. 8000">
+
+      <div class="hero-number">
+        <span id="remaining" class="big">—</span>
+        <span id="remaining-label" class="small-label">Set a budget to begin</span>
+      </div>
+
+      <div class="meter" role="progressbar" aria-label="Budget used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="meter">
+        <div id="meter-fill" class="meter-fill"></div>
+      </div>
+
+      <dl class="stats">
+        <div><dt>Planned total</dt><dd id="planned">₹0</dd></div>
+        <div><dt>Per week (budget ÷ 4)</dt><dd id="weekly">₹0</dd></div>
+        <div><dt>Bought so far</dt><dd id="bought">0 of 0 items</dd></div>
+      </dl>
+
+      <p id="tip" class="tip" aria-live="polite"></p>
+
+      <h3>Where the money goes</h3>
+      <ul id="breakdown" class="breakdown"></ul>
+      <p id="breakdown-empty" class="muted">Add items to see the category split.</p>
+    </section>
+
+    <!-- RIGHT: add item + list -->
+    <section class="panel" aria-labelledby="list-title">
+      <h2 id="list-title">Shopping list</h2>
+
+      <form id="item-form" class="item-form" autocomplete="off">
+        <div class="row">
+          <div class="col grow">
+            <label class="field" for="name">Item</label>
+            <input id="name" type="text" placeholder="e.g. Toor dal" required maxlength="40">
+          </div>
+          <div class="col">
+            <label class="field" for="category">Category</label>
+            <select id="category">
+              <option>Sabzi</option>
+              <option>Fruits</option>
+              <option>Anaj &amp; Dal</option>
+              <option>Dairy</option>
+              <option>Masale &amp; Oil</option>
+              <option>Snacks</option>
+              <option>Cleaning</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label class="field" for="qty">Quantity</label>
+            <input id="qty" type="number" min="0.1" step="any" value="1" required>
+          </div>
+          <div class="col">
+            <label class="field" for="price">Price per unit (₹)</label>
+            <input id="price" type="number" min="0" step="any" placeholder="e.g. 140" required>
+          </div>
+          <div class="col">
+            <label class="field" for="priority">Priority</label>
+            <select id="priority">
+              <option value="must">Must buy</option>
+              <option value="wait">Can wait</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn primary">Add item</button>
+      </form>
+
+      <ul id="list" class="list"></ul>
+      <p id="list-empty" class="empty">Your list is empty. Add your first item above.</p>
+
+      <div class="list-actions">
+        <button type="button" id="clear" class="btn ghost">Clear this month's list</button>
+      </div>
+    </section>
+  </main>
+
+  <section class="layout single">
+    <div class="panel" aria-labelledby="history-title">
+      <div class="panel-head">
+        <h2 id="history-title">All budgets</h2>
+        <span id="history-count" class="muted"></span>
+      </div>
+      <ul id="history" class="history"></ul>
+      <p id="history-empty" class="empty">No budgets saved yet. Pick a month and enter a budget above, and it will show up here.</p>
+    </div>
+  </section>
+  </div>
+
+  <footer class="foot">Your data is saved to the cloud with your login, so you can open it on any device.</footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
